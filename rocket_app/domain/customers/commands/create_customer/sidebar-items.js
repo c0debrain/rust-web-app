@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["CreateCustomer","Input for a `CreateCustomerCommand`. "]],"trait":[["CreateCustomerCommand","Create a customer. "]],"type":[["Result",""]]});

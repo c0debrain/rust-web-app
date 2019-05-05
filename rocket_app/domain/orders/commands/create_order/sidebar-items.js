@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["CreateOrder","Input for a `CreateOrderCommand`. "]],"trait":[["CreateOrderCommand","Create a new order. "]],"type":[["Result",""]]});

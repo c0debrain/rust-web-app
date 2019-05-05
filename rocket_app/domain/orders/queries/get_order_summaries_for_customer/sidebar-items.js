@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["GetOrderSummariesForCustomer","Input for a `GetOrderSummariesForCustomerQuery`. "],["OrderSummary","An individual order summary. "]],"trait":[["GetOrderSummariesForCustomerQuery","Get a collection of order summaries for a customer. "]],"type":[["Result",""]]});

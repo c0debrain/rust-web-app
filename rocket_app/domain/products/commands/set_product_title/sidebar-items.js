@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["SetProductTitle","Input for a `SetProductTitleCommand`. "]],"trait":[["SetProductTitleCommand","Set a new title for a product. "]],"type":[["Result",""]]});

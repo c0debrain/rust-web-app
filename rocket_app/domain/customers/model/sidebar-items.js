@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["store","Persistent customer storage. "]],"struct":[["Customer","A customer. "],["CustomerData","Data for a customer. "]],"type":[["CustomerId",""],["CustomerVersion",""],["NextCustomerId",""]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["GetOrder","Input for a `GetOrderQuery`. "]],"trait":[["GetOrderQuery","Get an order entity. "]],"type":[["Result",""]]});

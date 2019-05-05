@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["store","Persistent storage for products. "]],"struct":[["Price","A produce price."],["Product","A product with some simple metadata. "],["ProductData","Data for a product. "],["Title","A product title."]],"type":[["NextProductId",""],["ProductId",""],["ProductVersion",""]]});

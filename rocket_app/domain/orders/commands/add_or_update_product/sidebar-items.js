@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["AddOrUpdateProduct","Input for an `AddOrUpdateProductCommand`. "]],"trait":[["AddOrUpdateProductCommand","Add or update a product line item on an order. "]],"type":[["Result",""]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["GetProduct","Input for a `GetProductQuery`. "]],"trait":[["GetProductQuery","Get a product entity. "]],"type":[["Result",""]]});

@@ -1,0 +1,369 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/auto_impl-0.3.0/src/diag.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>diag.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../auto_impl/index.html'><img src='../../rust-logo.png' alt='logo' width='100'></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<span id="2">  2</span>
+<span id="3">  3</span>
+<span id="4">  4</span>
+<span id="5">  5</span>
+<span id="6">  6</span>
+<span id="7">  7</span>
+<span id="8">  8</span>
+<span id="9">  9</span>
+<span id="10"> 10</span>
+<span id="11"> 11</span>
+<span id="12"> 12</span>
+<span id="13"> 13</span>
+<span id="14"> 14</span>
+<span id="15"> 15</span>
+<span id="16"> 16</span>
+<span id="17"> 17</span>
+<span id="18"> 18</span>
+<span id="19"> 19</span>
+<span id="20"> 20</span>
+<span id="21"> 21</span>
+<span id="22"> 22</span>
+<span id="23"> 23</span>
+<span id="24"> 24</span>
+<span id="25"> 25</span>
+<span id="26"> 26</span>
+<span id="27"> 27</span>
+<span id="28"> 28</span>
+<span id="29"> 29</span>
+<span id="30"> 30</span>
+<span id="31"> 31</span>
+<span id="32"> 32</span>
+<span id="33"> 33</span>
+<span id="34"> 34</span>
+<span id="35"> 35</span>
+<span id="36"> 36</span>
+<span id="37"> 37</span>
+<span id="38"> 38</span>
+<span id="39"> 39</span>
+<span id="40"> 40</span>
+<span id="41"> 41</span>
+<span id="42"> 42</span>
+<span id="43"> 43</span>
+<span id="44"> 44</span>
+<span id="45"> 45</span>
+<span id="46"> 46</span>
+<span id="47"> 47</span>
+<span id="48"> 48</span>
+<span id="49"> 49</span>
+<span id="50"> 50</span>
+<span id="51"> 51</span>
+<span id="52"> 52</span>
+<span id="53"> 53</span>
+<span id="54"> 54</span>
+<span id="55"> 55</span>
+<span id="56"> 56</span>
+<span id="57"> 57</span>
+<span id="58"> 58</span>
+<span id="59"> 59</span>
+<span id="60"> 60</span>
+<span id="61"> 61</span>
+<span id="62"> 62</span>
+<span id="63"> 63</span>
+<span id="64"> 64</span>
+<span id="65"> 65</span>
+<span id="66"> 66</span>
+<span id="67"> 67</span>
+<span id="68"> 68</span>
+<span id="69"> 69</span>
+<span id="70"> 70</span>
+<span id="71"> 71</span>
+<span id="72"> 72</span>
+<span id="73"> 73</span>
+<span id="74"> 74</span>
+<span id="75"> 75</span>
+<span id="76"> 76</span>
+<span id="77"> 77</span>
+<span id="78"> 78</span>
+<span id="79"> 79</span>
+<span id="80"> 80</span>
+<span id="81"> 81</span>
+<span id="82"> 82</span>
+<span id="83"> 83</span>
+<span id="84"> 84</span>
+<span id="85"> 85</span>
+<span id="86"> 86</span>
+<span id="87"> 87</span>
+<span id="88"> 88</span>
+<span id="89"> 89</span>
+<span id="90"> 90</span>
+<span id="91"> 91</span>
+<span id="92"> 92</span>
+<span id="93"> 93</span>
+<span id="94"> 94</span>
+<span id="95"> 95</span>
+<span id="96"> 96</span>
+<span id="97"> 97</span>
+<span id="98"> 98</span>
+<span id="99"> 99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+</pre><div class="example-wrap"><pre class="rust ">
+<span class="doccomment">//! This module has two purposes:</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! 1. Provide the convenience method `emit_with_attr_note` and add it via</span>
+<span class="doccomment">//!    extension trait to `Diagnostic`.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! 2. Make `Diagnostic` work on stable by providing an own `Diagnostic` type</span>
+<span class="doccomment">//!    that prints the messages in a less-nice way. That way, other modules</span>
+<span class="doccomment">//!    don&#39;t have to worry about the stable/nightly distinction. `SpanExt` is</span>
+<span class="doccomment">//!    an extension trait that adds the `err()` method to the `Span` type. That</span>
+<span class="doccomment">//!    method works exactly like `Span::error()` but returns &quot;our&quot;</span>
+<span class="doccomment">//!    `Diagnostic`. Other modules can simply `use diag::SpanExt` and use</span>
+<span class="doccomment">//!    `.err()` on spans.</span>
+<span class="doccomment">//!</span>
+
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">proc_macro</span>::{<span class="ident">Span</span>, <span class="ident">TokenStream</span>};
+
+
+<span class="doccomment">/// Extension trait that adds a convenience method to `Diagnostic`. This is</span>
+<span class="doccomment">/// simply to reduce duplicate code in other modules.</span>
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">DiagnosticExt</span> {
+    <span class="doccomment">/// Helper function to add a note to the diagnostic (with a span pointing</span>
+    <span class="doccomment">/// to the `auto_impl` attribute) and emit the error. An `Err(())` is</span>
+    <span class="doccomment">/// always returned.</span>
+    <span class="kw">fn</span> <span class="ident">emit_with_attr_note</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, ()<span class="op">&gt;</span>;
+}
+
+<span class="kw">impl</span> <span class="ident">DiagnosticExt</span> <span class="kw">for</span> <span class="ident">Diagnostic</span> {
+    <span class="kw">fn</span> <span class="ident">emit_with_attr_note</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, ()<span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">span_note</span>(<span class="ident">Span</span>::<span class="ident">call_site</span>(), <span class="string">&quot;auto-impl requested here&quot;</span>)
+            .<span class="ident">emit</span>();
+
+        <span class="prelude-val">Err</span>(())
+    }
+}
+
+
+<span class="comment">// ==============================================================</span>
+<span class="comment">// Logic for stable/nightly mode starts here.</span>
+<span class="comment">//</span>
+<span class="comment">// First, we define a `Diagnostic` type. If we compile with the `nightly`</span>
+<span class="comment">// feature, it&#39;s simple a typedef to `proc_macro::Diagnostic`. If we don&#39;t</span>
+<span class="comment">// compile in nightly mode, we can&#39;t use that type, since it&#39;s still unstable.</span>
+<span class="comment">// So in that case, we define our own type that tries to mimic the original</span>
+<span class="comment">// `Diagnostic`.</span>
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>)]</span>
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">type</span> <span class="ident">Diagnostic</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">proc_macro</span>::<span class="ident">Diagnostic</span>;
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>))]</span>
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">Diagnostic</span> {
+    <span class="ident">span</span>: <span class="ident">Span</span>,
+    <span class="ident">msg</span>: <span class="ident">String</span>,
+}
+
+<span class="comment">// We provide the methods that `proc_macro::Diagnostic` also has here. Or</span>
+<span class="comment">// rather: we only implement the subset that this crate actually uses.</span>
+<span class="comment">//</span>
+<span class="comment">// When we&#39;re not on the nightly compiler, we can&#39;t show a nice error. So how</span>
+<span class="comment">// do we show the error then? The idea is to generate a token stream that</span>
+<span class="comment">// contains `compile_error!(msg)` macro invocations. This macro is part of the</span>
+<span class="comment">// standard library and emits `msg` as error. This is fairly useful for our</span>
+<span class="comment">// case. However, a big limitation is that we can only emit one message. So in</span>
+<span class="comment">// order to also show notes later added to the `Diagnostic`, we simply add</span>
+<span class="comment">// &quot;note: {the_note}&quot; to the error string. This is crude and ugly, but it</span>
+<span class="comment">// works.</span>
+<span class="comment">//</span>
+<span class="comment">// What about spans? Good question! Spans are important, but without a proper</span>
+<span class="comment">// `Diagnostic` API, we can&#39;t properly support spans on errors and notes. The</span>
+<span class="comment">// compiler will point to the `compile_error!()` invocation we generate. But we</span>
+<span class="comment">// can use another hack to improve the situation slightly! On the token stream</span>
+<span class="comment">// (containing `compile_error!()`) we generate, we can modify the spans of the</span>
+<span class="comment">// individual token trees. If we set all spans to the span the error originates</span>
+<span class="comment">// from, the compiler thinks that the `compile_error!()` code snippet has the</span>
+<span class="comment">// span from the actual error source. That means that the error message will</span>
+<span class="comment">// point to the actual error source!</span>
+<span class="comment">//</span>
+<span class="comment">// There is only a small problem: this only works when we get a proper span.</span>
+<span class="comment">// Sadly, on stable, we can only get correct spans for individual token trees,</span>
+<span class="comment">// not even token streams. We can&#39;t combine spans. As a consequence, spans are</span>
+<span class="comment">// only correct if they come directly from a `TokenTree`. In general, errors</span>
+<span class="comment">// coming from the `proxy` module have proper spans while errors from other</span>
+<span class="comment">// modules don&#39;t have proper spans (on stable!). &quot;Not proper&quot; means that the</span>
+<span class="comment">// span is simply `call_site()` -- it points to the `#[auto_impl()]` attribute.</span>
+<span class="comment">//</span>
+<span class="comment">// It could be worse, but it&#39;s simply true: for good error messages, nightly is</span>
+<span class="comment">// required.</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>))]</span>
+<span class="kw">impl</span> <span class="ident">Diagnostic</span> {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">note</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">msg</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Diagnostic</span> {
+        <span class="self">self</span>.<span class="ident">msg</span> <span class="op">+=</span> <span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;\n\nnote: {}&quot;</span>, <span class="ident">msg</span>.<span class="ident">into</span>());
+        <span class="self">self</span>
+    }
+
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">span_note</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="kw">_</span>: <span class="ident">Span</span>, <span class="ident">msg</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Diagnostic</span> {
+        <span class="comment">// With out span fake method, we can only handle one span. We take the</span>
+        <span class="comment">// one of the original error and ignore additional ones.</span>
+        <span class="self">self</span>.<span class="ident">msg</span> <span class="op">+=</span> <span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;\n\nnote: {}&quot;</span>, <span class="ident">msg</span>.<span class="ident">into</span>());
+        <span class="self">self</span>
+    }
+
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">emit</span>(<span class="self">self</span>) {
+        <span class="comment">// Create the error token stream that contains the `compile_error!()`</span>
+        <span class="comment">// invocation.</span>
+        <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">msg</span>;
+        <span class="kw">let</span> <span class="ident">tokens</span> <span class="op">=</span> <span class="ident">TokenStream</span>::<span class="ident">from</span>(<span class="macro">quote</span><span class="macro">!</span> {
+            <span class="macro">compile_error</span><span class="macro">!</span>(#<span class="ident">msg</span>);
+        });
+
+        <span class="comment">// Set the span of each token tree to the span the error originates</span>
+        <span class="comment">// from.</span>
+        <span class="kw">let</span> <span class="ident">tokens</span> <span class="op">=</span> <span class="ident">tokens</span>.<span class="ident">into_iter</span>()
+            .<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">mut</span> <span class="ident">tt</span><span class="op">|</span> {
+                <span class="ident">tt</span>.<span class="ident">set_span</span>(<span class="self">self</span>.<span class="ident">span</span>);
+                <span class="ident">tt</span>
+            })
+            .<span class="ident">collect</span>();
+
+        <span class="comment">// Push it to the global list of error streams</span>
+        <span class="ident">ERROR_TOKENS</span>.<span class="ident">with</span>(<span class="op">|</span><span class="ident">toks</span><span class="op">|</span> {
+            <span class="ident">toks</span>.<span class="ident">borrow_mut</span>().<span class="ident">push</span>(<span class="ident">tokens</span>)
+        });
+    }
+}
+
+<span class="comment">// Another problem with our `Diagnostic` hack on stable: the real</span>
+<span class="comment">// `Diagnostic::emit()` doesn&#39;t return anything and modifies global state (it</span>
+<span class="comment">// prints directly to stdout). We can&#39;t simply print! In our case it would be</span>
+<span class="comment">// correct to pass a `TokenStream` ass the `Err()` variant of a result back up</span>
+<span class="comment">// the stack and display it at the end. Two problems with that approach:</span>
+<span class="comment">//</span>
+<span class="comment">// - That&#39;s not how this application was build. Instead, it&#39;s build with the</span>
+<span class="comment">//   future `proc_macro` API in mind. And we wouldn&#39;t want to change everything</span>
+<span class="comment">//   back once it&#39;s stable.</span>
+<span class="comment">// - On nightly, we don&#39;t want to pass TokenStreams up the stack. We can&#39;t have</span>
+<span class="comment">//   a completely different structure on nightly vs. on stable.</span>
+<span class="comment">//</span>
+<span class="comment">// Thus, we just &quot;simulate&quot; the original `emit()` by also modifying global</span>
+<span class="comment">// state. We simply have a list of error token streams. This list is added to</span>
+<span class="comment">// the final token stream at the end (in case of an error). It&#39;s not a very</span>
+<span class="comment">// nice solution, but it&#39;s only a hack while stable doesn&#39;t offer something</span>
+<span class="comment">// proper.</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>))]</span>
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cell</span>::<span class="ident">RefCell</span>;
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>))]</span>
+<span class="macro">thread_local</span><span class="macro">!</span> {
+    <span class="kw">static</span> <span class="ident">ERROR_TOKENS</span>: <span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TokenStream</span><span class="op">&gt;&gt;</span> <span class="op">=</span> <span class="ident">RefCell</span>::<span class="ident">new</span>(<span class="macro">vec</span><span class="macro">!</span>[]);
+}
+
+<span class="doccomment">/// On stable, we just copy the error token streams from the global variable.</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>))]</span>
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">error_tokens</span>() <span class="op">-&gt;</span> <span class="ident">TokenStream</span> {
+    <span class="ident">ERROR_TOKENS</span>.<span class="ident">with</span>(<span class="op">|</span><span class="ident">toks</span><span class="op">|</span> <span class="ident">toks</span>.<span class="ident">borrow</span>().<span class="ident">iter</span>().<span class="ident">cloned</span>().<span class="ident">collect</span>())
+}
+
+<span class="doccomment">/// On nightly, we don&#39;t use and don&#39;t have a strange global variable. Instead,</span>
+<span class="doccomment">/// we just return an empty token stream. That&#39;s not a problem because all of</span>
+<span class="doccomment">/// our errors were already printed.</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>)]</span>
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">error_tokens</span>() <span class="op">-&gt;</span> <span class="ident">TokenStream</span> {
+    <span class="ident">TokenStream</span>::<span class="ident">new</span>()
+}
+
+<span class="doccomment">/// Extension trait to add the `err()` method to `Span`. This makes it easy to</span>
+<span class="doccomment">/// start a `Diagnostic` from a span.</span>
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">trait</span> <span class="ident">SpanExt</span> {
+    <span class="kw">fn</span> <span class="ident">err</span>(<span class="self">self</span>, <span class="ident">msg</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Diagnostic</span>;
+}
+
+<span class="kw">impl</span> <span class="ident">SpanExt</span> <span class="kw">for</span> <span class="ident">Span</span> {
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">err</span>(<span class="self">self</span>, <span class="ident">msg</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Diagnostic</span> {
+        <span class="ident">Diagnostic</span>::<span class="ident">spanned</span>(<span class="self">self</span>, <span class="kw">crate</span>::<span class="ident">proc_macro</span>::<span class="ident">Level</span>::<span class="ident">Error</span>, <span class="ident">msg</span>)
+    }
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>))]</span>
+    <span class="kw">fn</span> <span class="ident">err</span>(<span class="self">self</span>, <span class="ident">msg</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Diagnostic</span> {
+        <span class="ident">Diagnostic</span> {
+            <span class="ident">span</span>: <span class="self">self</span>,
+            <span class="ident">msg</span>: <span class="ident">msg</span>.<span class="ident">into</span>(),
+        }
+    }
+}
+</pre></div>
+</section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g., <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g., <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g., <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../../";window.currentCrate = "auto_impl";</script><script src="../../aliases.js"></script><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>
